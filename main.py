@@ -17,6 +17,6 @@ with open('secrets.json', 'r') as f:
 # Set up Intents
 intents = discord.Intents.all()
 bot = Bot(command_prefix='!', intents=intents)
-bot.add_cog(ShitBot)
-bot.add_cog(Advent)
+bot.add_cog(ShitBot(bot))
+bot.add_cog(Advent(bot))
 bot.run(TOKEN)

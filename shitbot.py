@@ -13,7 +13,11 @@ from cpediscord import *
 
 
 
-class ShitBot(commands.Cog):
+class ShitBot(commands.Cog, name="Shit meme bot"):
+
+
+    def __init__(self,bot):
+        self.bot=bot
 
     async def record_usage(self,ctx):
         t = datetime.fromtimestamp(time()).strftime('%I:%M:%S %p')

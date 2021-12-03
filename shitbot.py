@@ -1,13 +1,12 @@
 
 import discord
 import asyncio
-from discord.ext.commands import bot
 from discord.ext.commands.core import is_owner
 from uwuify import uwu
 from discord.ext import commands
 from time import time
 from datetime import datetime
-from random import randint, seed
+from random import randint
 
 from links import *
 from cpediscord import *
@@ -171,7 +170,7 @@ class ShitBot(commands.Cog):
             await msg.add_reaction(emoji)
 
 
-    @commands.event
+    @commands.Cog.listener()
     async def on_raw_reaction_add(self,payload):
         member = payload.member
         if member.bot:
@@ -219,7 +218,7 @@ class ShitBot(commands.Cog):
                 await message.remove_reaction(emoji, member)
 
 
-    @commands.event
+    @commands.Cog.listener()
     async def on_raw_reaction_remove(self,payload):
         guild = self.bot.get_guild(id=payload.guild_id)
         member = discord.utils.get(guild.members, id=payload.user_id)
@@ -309,7 +308,7 @@ class ShitBot(commands.Cog):
         await ctx.send(response)
 
 
-    @commands.event
+    @commands.Cog.listener()
     async def on_member_join(member):
         role = discord.utils.get(member.guild.roles, id=798949146055934053)
         await member.add_roles(role)

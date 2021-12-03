@@ -1,5 +1,4 @@
 # commands.py
-from discord.ext.commands import commands
 import json
 from ratelimit import limits
 from ratelimit import RateLimitException

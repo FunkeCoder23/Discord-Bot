@@ -524,7 +524,7 @@ class ShitBot(commands.Cog):
 
     @commands.command(name='lmgtfy', help='... search it yourself')
     @commands.before_invoke(record_usage)
-    async def lmgtfy(self,ctx, *, args=randresponse(nope) + ""):
+    async def lmgtfy(self,ctx, *, args):
         txt = args.split(' ')
         term = "+".join(txt)
         await ctx.send(f"https://www.google.com/search?q={term}")
@@ -532,7 +532,7 @@ class ShitBot(commands.Cog):
 
     @commands.command(name='ud', help='search urban dictionary')
     @commands.before_invoke(record_usage)
-    async def ud(self,ctx, *, args=randresponse(nope) + ""):
+    async def ud(self,ctx, *, args):
         txt = args.split(' ')
         term = "+".join(txt)
         await ctx.send(f"https://www.urbandictionary.com/define.php?term={term}")

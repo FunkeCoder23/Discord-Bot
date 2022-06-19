@@ -1,17 +1,23 @@
-[tool.poetry]
-name = "robustfoolhardybots"
-version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+[build-system]
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
+[tool]
+[tool.poetry]
+authors = ["Aaron Tobias"]
+description = "THE discord bot"
+name = "TheBot"
+version = "0.2.0"
 [tool.poetry.dependencies]
+aiodns = "^3.0.0"
+async-timeout = "^4.0.2"
+cchardet = "^2.1.7"
+pynacl = "^1.5.0"
 python = "^3.8"
-discord = "^1.0.1"
 ratelimit = "^2.2.1"
 uwuify = "^1.0.1"
-
+youtube_dl = "^2021.12.17"
+yt-dlp = "^2022.5.18"
+aiohttp = "^3.8.1"
+"discord.py" = {git = "https://github.com/Rapptz/discord.py.git", rev = "master"}
 [tool.poetry.dev-dependencies]
-
-[build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"

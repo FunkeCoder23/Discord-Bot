@@ -7,23 +7,21 @@ from discord.ext import commands
 from time import time
 from datetime import datetime
 from random import randint
+from cogs.utils import *
+import re
 
-from links import *
-from cpediscord import *
-
-
+uid = re.compile('[0-9]+')
 
 class ShitBot(commands.Cog, name="Shit meme bot"):
 
-
-    def __init__(self,bot):
-        self.bot=bot
+    def __init__(self, bot):
+        self.bot = bot
 
     async def record_usage(self,ctx):
         t = datetime.fromtimestamp(time()).strftime('%I:%M:%S %p')
         print(t, ":", ctx.author, 'used', ctx.command)
 
-    def emojify(text):
+    def emojify(self,text):
         newText = ""
         for i in text:
             if i == ' ':
@@ -44,7 +42,7 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
         return newText
 
 
-    def sarcastify(text):
+    def sarcastify(self,text):
         newText = ""
         for i in text:
             randInt = randint(0, 100)
@@ -60,7 +58,7 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
 
 
 
-    def prand(min, max):
+    def prand(self,min, max):
         global lastrand
         rand = randint(min, max)
         if (max - min) > len(lastrand):
@@ -77,7 +75,7 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
         return links[rand]
 
 
-    def check_role(roles, name):
+    def check_role(self,roles, name):
         for role in roles:
             if name == role.name:
                 return True
@@ -277,7 +275,7 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
         await ctx.send(response)
 
 
-    @commands.command(name='uwu', help='You already know')
+    @commands.command(name='uwuify', help='You already know')
     @commands.before_invoke(record_usage)
     async def uwuify(self,ctx, *, args):
         await ctx.send(uwu(args))
@@ -313,7 +311,7 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
 
 
     @commands.Cog.listener()
-    async def on_member_join(member):
+    async def on_member_join(self,member):
         role = discord.utils.get(member.guild.roles, id=798949146055934053)
         await member.add_roles(role)
 
@@ -325,12 +323,12 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
         print(auth)
         if auth == JRN:
             response = "Just kidding... fuck off, Josh"
-            await ctx.send(f"<@{JRN}> created me")
+            await ctx.send(f"<@!{JRN}> created me")
             await asyncio.sleep(5)
         elif auth == ADT:
             response = "You made me, master"
         else:
-            response = "<@{}> created me".format(ADT)
+            response = "<@!{}> created me".format(ADT)
         await ctx.send(response)
 
 
@@ -342,24 +340,30 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
             await ctx.send(args)
         await ctx.send(response)
 
-
-    def loadPasta(pasta):
+    def loadPasta(self,id):
         pastas = []
-        with open('./pastas/' + str(pasta), 'r') as pf:
-            spaghet = []
-            for line in pf.readlines():
-                line = line.strip()
-                # print(line)
-                if line == '':
-                    pastas.append(spaghet)
-                    spaghet = []
-                    continue
-                spaghet.append(line)
-            pf.close()
-        return pastas
+        print(f"In loadpasta, id is {id}")
+        try:
+            with open(f'pastas/{id}', 'r') as pf:
+                spaghet = []
+                for line in pf.readlines():
+                    line = line.strip()
+                    # print(line)
+                    if line == '':
+                        pastas.append(spaghet)
+                        spaghet = []
+                        continue
+                    spaghet.append(line)
+                
+                pf.close()
+            # raise
+            return pastas
+        except:
+            print(f"Could not find pasta at ./pastas/{id}")
+            return None
 
 
-    def savePasta(pasta, spaghet):
+    def savePasta(self,pasta, spaghet):
         spaghet = "".join(spaghet)
         print(spaghet)
 
@@ -369,26 +373,28 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
         pf.close()
 
 
-    def parseArgs(args):
+    def parseArgs(self,args):
         num = None
-        mod = None
+        mods=[]
         if args:
             for i in range(len(args)):
-                if i > 1:
-                    break
                 if args[i].isnumeric():
                     num = int(args[i])
                 else:
-                    mod = args[i]
-        return (num, mod)
+                    mods.append(args[i])
+        return (num, mods)
 
 
 
-    def getIdFromAt(arg):
-        id = arg[3:-1]
-        good = id.isnumeric()
-        return (id, good)
-
+    def getIdFromAt(self,username):
+        print(username)
+        id = re.findall(uid,username)
+        if id:
+            print(id)
+            return id[0]
+        else:
+            print(f"No good ID: {username}")
+            return None
 
     @commands.command(name='mimic', help='Muahaha')
     @is_owner()
@@ -398,10 +404,9 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
         if u.isnumeric():
             id = int(u)
             print(id)
-            good = True
         else:
-            (id, good) = self.getIdFromAt(u)
-        if not good:
+            id = self.getIdFromAt(u)
+        if not id:
             await ctx.send(self.randresponse(nope) + "")
             return
         user = self.bot.get_user(int(id))
@@ -410,16 +415,20 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
             return
         hook = await ctx.channel.create_webhook(name="mimic")
         name = ctx.message.guild.get_member(int(id))
-        await hook.send(txt, username=name.nick, avatar_url=user.avatar_url)
+        if name:
+            nick = name.nick
+        else:
+            nick = user.name
+        await hook.send(txt, username=nick, avatar_url=user.avatar_url)
         await hook.delete()
 
 
     @commands.command(name='timer', help='We\'ll see about that')
     @commands.before_invoke(record_usage)
     async def timer(self,ctx, amt=0, unit=None, name="<@0>", *, txt):
-        (id, good) = self.getIdFromAt(name)
+        id = self.getIdFromAt(name)
         t = amt
-        if not good:
+        if not id:
             id = ctx.author.id
         if amt < 0:
             return
@@ -455,24 +464,28 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
             -u uwuify"""
     )
     @commands.before_invoke(record_usage)
-    async def pasta(self,ctx, u=None, *args):
-        (num, mod) = self.parseArgs(args)
-        if u is None:
-                id = ctx.author.id
-                good=True
-        else:
-            (id, good) = self.getIdFromAt(u)
-        if not good:
-                await ctx.send(self.randresponse(nope)+ f", {u} is a bad username")
-                return
-        user = self.bot.get_user(int(id))
+    async def pasta(self,ctx, user=None, *args):
+        (num, mods) = self.parseArgs(args)
         if user is None:
-            await ctx.send(self.randresponse(nope) + f", user {u} not found")
+                id = ctx.author.id
+                print(f"from no name pasta:{id}")
+        else:
+            id = self.getIdFromAt(user)
+            print(f"from name pasta: {id}")
+            
+        if not id:
+                await ctx.send(self.randresponse(nope)+ f", {user} is a bad username")
+                return
+        CP = self.loadPasta(int(id))
+        if CP is None:
+            await ctx.send(self.randresponse(nope) + f", user {user} not found")
             return
-        CP = self.loadPasta(id)
-        e = mod in EMOJIFY
-        s = mod in SARCASTIFY
-        u = mod in UWUIFY
+
+        e,s,u=False,False,False
+        for mod in mods:
+            e = (mod in EMOJIFY) or e
+            s = (mod in SARCASTIFY) or s
+            u = (mod in UWUIFY) or u
 
         i = randint(0, len(CP) - 1)
 
@@ -480,14 +493,17 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
             i = num
         cp = CP[i % len(CP)]
         id = f'<@!{id}>'
+        pasta = ''
         for line in cp:
+            
             if s:
                 line = self.sarcastify(line)
-            elif e:
+            if e:
                 line = self.emojify(line)
-            elif u:
-                line = self.uwu(line)
-            await self.mimic(self,ctx, id, txt=line, d=False)
+            if u:
+                line = uwu(line)
+            pasta += line + '\n'
+        await self.mimic(ctx, id, txt=pasta, d=False)
 
     @commands.command(
         name='vinniepasta',
@@ -503,7 +519,7 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
     )
     @commands.before_invoke(record_usage)
     async def vinniepastaa(self,ctx, *args):
-        await self.pasta(self,ctx, f'<@!{VG}>', *args)
+        await self.pasta(ctx, f'<@!{VG}>', *args)
 
 
 
@@ -522,7 +538,7 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
     )
     @commands.before_invoke(record_usage)
     async def shitpasta(self,ctx, *args):
-        await self.pasta(self,ctx, f'<@!{JB}>', *args)
+        await self.pasta(ctx, f'<@!{JB}>', *args)
         
 
 
@@ -531,7 +547,7 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
     async def lmgtfy(self,ctx, *, args):
         txt = args.split(' ')
         term = "+".join(txt)
-        await ctx.send(f"https://www.google.com/search?q={term}")
+        await ctx.send(f"https://googlethatforyou.com/?q={term}")
 
 
     @commands.command(name='ud', help='search urban dictionary')
@@ -541,22 +557,28 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
         term = "+".join(txt)
         await ctx.send(f"https://www.urbandictionary.com/define.php?term={term}")
 
+    @commands.command(name='wiki', help='search wikipedia')
+    @commands.before_invoke(record_usage)
+    async def wiki(self,ctx, *, args):
+        txt = args.split(' ')
+        term = "+".join(txt)
+        await ctx.send(f"https://en.wikipedia.org/w/index.php?search={term}")
 
     @commands.command(name='@', help='do the thing')
     @commands.before_invoke(record_usage)
-    async def at(self,ctx, arg0=None, num=1):
+    async def at(self,ctx, user=None, times=1):
         if ctx.author.id in ADMIN:
-            if num not in range(5):
-                num = 1
+            if times not in range(6):
+                times = 1
                 await ctx.send(f"Don't be a dick, <@!{ctx.author.id}>")
-            if arg0 == "@everyone":
-                for i in range(num):
+            if user == "everyone":
+                for i in range(times):
                     await ctx.send('@everyone', delete_after=0.5)
                     return
-            (id, good) = self.getIdFromAt(arg0)
-            if good:
+            id = self.getIdFromAt(user)
+            if id:
                 await ctx.message.delete()
-                for i in range(num):
+                for i in range(times):
                     await ctx.send(f'<@!{id}>', delete_after=0.5)
         else:
             await ctx.send(self.randresponse(nope))
@@ -569,7 +591,7 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
     async def kickjosh(self,ctx):
         guild = self.bot.get_guild(638163732463222786)
         josh = guild.get_member(JRN)
-        await self.kick(self,ctx, f"<@{JRN}>")
+        await self.kick(ctx, f"<@!{JRN}>")
         try:
             await josh.kick()
         except:
@@ -578,19 +600,22 @@ class ShitBot(commands.Cog, name="Shit meme bot"):
 
     @commands.command(name='newpasta', help='Save a new pasta')
     @commands.before_invoke(record_usage)
-    async def newpasta(self,ctx, *, args):
-        self.savePasta(self,ctx.author.id, args)
-        response = 'Saved pasta for {}'.format(self,ctx.author.name)
+    async def newpasta(self, ctx, *, args):
+        print(ctx.author.id)
+        self.savePasta(ctx.author.id, args)
+        response = 'Saved pasta for {}'.format(ctx.author.name)
         await ctx.send(response)
 
     
     @commands.command(name='annoyjosh', help='oops, sorry')
     @is_owner()
     async def annoyjosh(self,ctx):
-        await ctx.send(f"<@{JRN}>", delete_after=0.5)
+        await ctx.send(f"<@!{JRN}>", delete_after=0.5)
         await asyncio.sleep(5)
 
         for i in range(1):
             await ctx.send(self.randresponse(annoys), tts=True)
 
 
+async def setup(bot):
+    await bot.add_cog(ShitBot(bot))

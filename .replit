@@ -1,0 +1,6 @@
+run = ["python","main.py"]
+
+[packager]
+language="python3"
+
+ignoredPackages=["discord"]

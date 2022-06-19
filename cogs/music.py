@@ -198,13 +198,13 @@ class VoiceState:
         self.bot = bot
         self._ctx = ctx
 
-        self.current = None
-        self.voice = None
+        self.current:Song = None
+        self.voice:discord.VoiceClient = None
         self.next = asyncio.Event()
-        self.songs = SongQueue()
+        self.songs: SongQueue = SongQueue()
 
-        self._loop = False
-        self._volume = 0.5
+        self._loop: bool = False
+        self._volume: float = 0.5
         self.skip_votes = set()
 
         self.audio_player = bot.loop.create_task(self.audio_player_task())
@@ -227,6 +227,7 @@ class VoiceState:
     @volume.setter
     def volume(self, value: float):
         self._volume = value
+        self.current.source.volume = self._volume
 
     @property
     def is_playing(self):
@@ -235,7 +236,7 @@ class VoiceState:
     async def audio_player_task(self):
         while True:
             self.next.clear()
-
+            
             if not self.loop:
                 # Try to get the next song within 3 minutes.
                 # If no song will be added to the queue in time,
@@ -256,6 +257,7 @@ class VoiceState:
 
     def play_next_song(self, error=None):
         if error:
+            self.current=None
             raise VoiceError(str(error))
 
         self.next.set()
@@ -352,16 +354,22 @@ class Music(commands.Cog):
             return await ctx.send('Nothing being played at the moment.')
 
         if volume is None:
-            return await ctx.send(f"Volume is currently {ctx.voice_state.volume * 100:.2f}")
-
+            return await self.get_volume(ctx)
         
         if 0 > volume or volume > 100:
             return await ctx.send('Volume must be between 0 and 100')
         ctx.voice_state.volume = volume / 100
-        if volume == 69:
-            return await ctx.send("Nice")
-        return await ctx.send(f'Volume of the player set to {volume:.2f}')
 
+        return await self.get_volume(ctx)
+    
+    async def get_volume(self, ctx):
+        volume = ctx.voice_state.volume * 100
+        if volume == 0:
+            return await ctx.send(f'Volume of the player set to {volume:.2f}')
+        elif volume == 69:
+            await ctx.send("Nice")
+        return await ctx.send(f'Volume of the player set to {volume:.0f}%')
+        
     @commands.command(name='now', aliases=['current', 'playing'])
     async def _now(self, ctx: commands.Context):
         """Displays the currently playing song."""
@@ -376,7 +384,7 @@ class Music(commands.Cog):
     async def _pause(self, ctx: commands.Context):
         """Pauses the currently playing song."""
 
-        if not ctx.voice_state.is_playing and ctx.voice_state.voice.is_playing():
+        if ctx.voice_state.voice.is_playing and not ctx.voice_state.is_paused():
             ctx.voice_state.voice.pause()
             await ctx.message.add_reaction('⏯')
 
@@ -403,7 +411,7 @@ class Music(commands.Cog):
     @commands.command(name='skip')
     async def _skip(self, ctx: commands.Context):
         """Vote to skip a song. The requester can automatically skip.
-        3 skip votes are needed for the song to be skipped.
+        Half of the listening party's skip votes are needed for the song to be skipped.
         """
 
         if not ctx.voice_state.is_playing:
@@ -411,21 +419,23 @@ class Music(commands.Cog):
 
         voter = ctx.message.author
         if voter == ctx.voice_state.current.requester:
-            await ctx.message.add_reaction('⏭')
             ctx.voice_state.skip()
+            return await ctx.message.add_reaction('⏭')
 
         elif voter.id not in ctx.voice_state.skip_votes:
             ctx.voice_state.skip_votes.add(voter.id)
             total_votes = len(ctx.voice_state.skip_votes)
 
-            if total_votes >= 3:
-                await ctx.message.add_reaction('⏭')
+            votes_needed = len(ctx.author.voice.channel.members) / 2
+            
+            if total_votes >= votes_needed:
                 ctx.voice_state.skip()
+                return await ctx.message.add_reaction('⏭')
             else:
-                await ctx.send('Skip vote added, currently at **{}/3**'.format(total_votes))
+                return await ctx.send(f'Skip vote added, currently at **{total_votes}/{votes_needed}**')
 
         else:
-            await ctx.send('You have already voted to skip this song.')
+            return await ctx.send('You have already voted to skip this song.')
 
     @commands.command(name='queue')
     async def _queue(self, ctx: commands.Context, *, page: int = 1):
@@ -459,7 +469,7 @@ class Music(commands.Cog):
             return await ctx.send('Empty queue.')
 
         ctx.voice_state.songs.shuffle()
-        await ctx.message.add_reaction('✅')
+        await ctx.message.add_reaction('🔀')
 
     @commands.command(name='remove')
     async def _remove(self, ctx: commands.Context, index: int):
@@ -469,7 +479,7 @@ class Music(commands.Cog):
             return await ctx.send('Empty queue.')
 
         ctx.voice_state.songs.remove(index - 1)
-        await ctx.message.add_reaction('✅')
+        await ctx.message.add_reaction('❌')
 
     @commands.command(name='loop')
     async def _loop(self, ctx: commands.Context):
@@ -477,16 +487,17 @@ class Music(commands.Cog):
 
         Invoke this command again to unloop the song.
         """
+        return await ctx.send("Doesn't work at the moment.")
 
-        if not ctx.voice_state.is_playing:
-            return await ctx.send('Nothing being played at the moment.')
+        # if not ctx.voice_state.is_playing:
+            # return await ctx.send('Nothing being played at the moment.')
 
-        # Inverse boolean value to loop and unloop.
-        ctx.voice_state.loop = not ctx.voice_state.loop
-        if ctx.voice_state.loop:
-            await ctx.message.add_reaction('✅')
-        else:
-            await ctx.message.add_reaction('❌')
+        # # Inverse boolean value to loop and unloop.
+        # ctx.voice_state.loop = not ctx.voice_state.loop
+        # if ctx.voice_state.loop:
+        #     await ctx.message.add_reaction('🔁')
+        # else:
+        #     await ctx.message.add_reaction('❌')
 
     @commands.command(name='play')
     async def _play(self, ctx: commands.Context, *, search: str):
@@ -515,6 +526,7 @@ class Music(commands.Cog):
 
     @_join.before_invoke
     @_play.before_invoke
+    @_skip.before_invoke
     async def ensure_voice_state(self, ctx: commands.Context):
         if not ctx.author.voice or not ctx.author.voice.channel:
             raise commands.CommandError('You are not connected to any voice channel.')

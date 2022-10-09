@@ -110,11 +110,11 @@ pycparser = "*"
 
 [[package]]
 name = "charset-normalizer"
-version = "2.0.12"
+version = "2.1.0"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
 category = "main"
 optional = false
-python-versions = ">=3.5.0"
+python-versions = ">=3.6.0"
 
 [package.extras]
 unicode_backport = ["unicodedata2"]
@@ -259,6 +259,17 @@ python-versions = ">=3.6,<4.0"
 click = ">=8.0.1,<9.0.0"
 
 [[package]]
+name = "wavelink"
+version = "1.3.1"
+description = "A robust and powerful Lavalink wrapper for discord.py and derivatives."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+aiohttp = ">=3.7.4,<4"
+
+[[package]]
 name = "websockets"
 version = "10.3"
 description = "An implementation of the WebSocket Protocol (RFC 6455 & 7692)"
@@ -305,7 +316,7 @@ websockets = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "199edeecc686c07bc0bfa5f7349c36e6d4fd33cb626a188d63a8cff507c685c2"
+content-hash = "6fbb5514691d0eae79366f63fc651ec22ab6472ab7fa2a0f0b0a97dc4a236d0f"
 
 [metadata.files]
 aiodns = [
@@ -582,8 +593,8 @@ cffi = [
     {file = "cffi-1.15.0.tar.gz", hash = "sha256:920f0d66a896c2d99f0adbb391f990a84091179542c205fa53ce5787aff87954"},
 ]
 charset-normalizer = [
-    {file = "charset-normalizer-2.0.12.tar.gz", hash = "sha256:2857e29ff0d34db842cd7ca3230549d1a697f96ee6d3fb071cfa6c7393832597"},
-    {file = "charset_normalizer-2.0.12-py3-none-any.whl", hash = "sha256:6881edbebdb17b39b4eaaa821b438bf6eddffb4468cf344f09f89def34a8b1df"},
+    {file = "charset-normalizer-2.1.0.tar.gz", hash = "sha256:575e708016ff3a5e3681541cb9d79312c416835686d054a23accb873b254f413"},
+    {file = "charset_normalizer-2.1.0-py3-none-any.whl", hash = "sha256:5189b6f22b01957427f35b6a08d9a0bc45b46d3788ef5a92e978433c7a35f8a5"},
 ]
 click = [
     {file = "click-8.1.3-py3-none-any.whl", hash = "sha256:bb4d8133cb15a609f44e8213d9b391b0809795062913b383c62be0ee95b1db48"},
@@ -808,6 +819,10 @@ ratelimit = [
 uwuify = [
     {file = "uwuify-1.1.0-py3-none-any.whl", hash = "sha256:554dffbd9c5620006a0208031f82c3d2fe7a63c4a426ccd2436dea18b1a446fa"},
     {file = "uwuify-1.1.0.tar.gz", hash = "sha256:6afebb9d4d7a1d31529304f9915f18e806699c50380a72875e50c35c01581d0c"},
+]
+wavelink = [
+    {file = "wavelink-1.3.1-py3-none-any.whl", hash = "sha256:cb8574ed57fbc33601310ab57bacb87608371fe4184f1bdb815759adde886cc0"},
+    {file = "wavelink-1.3.1.tar.gz", hash = "sha256:deda11bff332fbae052aa1c617eb1bd0d59525411fd35de6c6a33bb408d47e38"},
 ]
 websockets = [
     {file = "websockets-10.3-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:661f641b44ed315556a2fa630239adfd77bd1b11cb0b9d96ed8ad90b0b1e4978"},

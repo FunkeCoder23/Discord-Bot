@@ -22,6 +22,7 @@ initial_extensions = [
     "cogs.advent",
     "cogs.music",
     "cogs.shitbot",
+    "cogs.rpg",
 ]
 
 description = """
@@ -84,7 +85,7 @@ class TheBot(commands.Bot):
         if not hasattr(self, 'uptime'):
             self.uptime = discord.utils.utcnow()
 
-        print(f'Ready: {self.user} (ID: {self.user.id})')
+        print(f'Ready: {self.user} (ID: {self.user.id}) ({discord.utils.utcnow()}')
     
     async def get_context(self, origin):
         return await super().get_context(origin)

@@ -8,6 +8,7 @@ from time import time, timezone
 from datetime import datetime
 from dateutil import tz
 from os import environ as config
+import logging
 
 NYC = tz.gettz('America/New_York')
 
@@ -17,6 +18,7 @@ PLACES = {
     "3": "3rd",
 }
 
+log = logging.getLogger(__name__)
 
 class Advent(commands.Cog, name="Advent of Code"):
 	async def record_usage(self, ctx):

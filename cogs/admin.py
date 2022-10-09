@@ -17,6 +17,9 @@ import time
 import subprocess
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Union, Optional
 
+import logging
+log = logging.getLogger(__name__)
+
 
 class Admin(commands.Cog):
     """Admin-only commands that make the bot dynamic."""
@@ -89,7 +92,7 @@ class Admin(commands.Cog):
         except commands.ExtensionError as e:
             await ctx.send(f'{e.__class__.__name__}: {e}')
         else:
-            await ctx.send('\N{OK HAND SIGN}')
+            await ctx.message.add_reaction('\N{OK HAND SIGN}')
 
     _GIT_PULL_REGEX = re.compile(r'\s*(?P<filename>.+?)\s*\|\s*[0-9]+\s*[+-]+')
 
